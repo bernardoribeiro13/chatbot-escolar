@@ -1,5 +1,7 @@
 # chatbot-escolar
 
+[![CI](https://github.com/bernardoribeiro13/chatbot-escolar/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/bernardoribeiro13/chatbot-escolar/actions/workflows/ci.yml)
+
 > ⚠️ **Aviso:** este é um projeto **fictício**, criado para fins de estudo. Ele **não usa dados reais** de nenhuma escola, aluno, responsável ou funcionário.
 
 TODO
