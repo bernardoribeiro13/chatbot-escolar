@@ -1,0 +1,43 @@
+# Local development stack: PostgreSQL + pgvector and Redis.
+# Variables are read from infra/.env (copy it from .env.example).
+name: chatbot-escolar
+
+services:
+  postgres:
+    image: pgvector/pgvector:pg16
+    container_name: chatbot-postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:?set POSTGRES_DB in infra/.env}
+      POSTGRES_USER: ${POSTGRES_USER:?set POSTGRES_USER in infra/.env}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?set POSTGRES_PASSWORD in infra/.env}
+      API_DB_PASSWORD: ${API_DB_PASSWORD:?set API_DB_PASSWORD in infra/.env}
+      RAG_DB_PASSWORD: ${RAG_DB_PASSWORD:?set RAG_DB_PASSWORD in infra/.env}
+    ports:
+      - "127.0.0.1:${DB_PORT:-5432}:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      # Runs only when the data volume is empty (first start or after `down -v`).
+      - ./postgres/init:/docker-entrypoint-initdb.d:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  redis:
+    image: redis:7-alpine
+    container_name: chatbot-redis
+    restart: unless-stopped
+    # Conversation state is ephemeral: no RDB snapshots, no AOF.
+    command: ["redis-server", "--save", "", "--appendonly", "no"]
+    ports:
+      - "127.0.0.1:${REDIS_PORT:-6379}:6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:
